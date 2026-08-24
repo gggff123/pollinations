@@ -63,6 +63,7 @@ export const Tooltip: FC<TooltipProps> = ({
         maxWidth,
     });
     const triggerRef = useRef<HTMLElement | null>(null);
+    const popupRef = useRef<HTMLElement | null>(null);
     const tapPinnedRef = useRef(false);
     const tooltipId = useId();
 
@@ -75,7 +76,13 @@ export const Tooltip: FC<TooltipProps> = ({
         if (!showTooltip) return;
 
         const dismissOnOutsideTap = (event: PointerEvent) => {
-            if (triggerRef.current?.contains(event.target as Node)) return;
+            const target = event.target as Node;
+            if (
+                triggerRef.current?.contains(target) ||
+                popupRef.current?.contains(target)
+            ) {
+                return;
+            }
             tapPinnedRef.current = false;
             setShowTooltip(false);
         };
@@ -84,23 +91,34 @@ export const Tooltip: FC<TooltipProps> = ({
             tapPinnedRef.current = false;
             setShowTooltip(false);
         };
-        const dismissOnViewportChange = () => {
-            tapPinnedRef.current = false;
-            setShowTooltip(false);
+        const handleViewportChange = () => {
+            if (!triggerRef.current) return;
+            const rect = triggerRef.current.getBoundingClientRect();
+            const isOut =
+                rect.bottom < 0 ||
+                rect.top > window.innerHeight ||
+                rect.right < 0 ||
+                rect.left > window.innerWidth;
+            if (isOut) {
+                tapPinnedRef.current = false;
+                setShowTooltip(false);
+            } else {
+                updateTooltipPosition();
+            }
         };
 
         document.addEventListener("pointerdown", dismissOnOutsideTap);
         document.addEventListener("keydown", dismissOnEscape);
-        window.addEventListener("scroll", dismissOnViewportChange, {
+        window.addEventListener("scroll", handleViewportChange, {
             capture: true,
             passive: true,
         });
-        window.addEventListener("resize", dismissOnViewportChange);
+        window.addEventListener("resize", handleViewportChange);
         return () => {
             document.removeEventListener("pointerdown", dismissOnOutsideTap);
             document.removeEventListener("keydown", dismissOnEscape);
-            window.removeEventListener("scroll", dismissOnViewportChange, true);
-            window.removeEventListener("resize", dismissOnViewportChange);
+            window.removeEventListener("scroll", handleViewportChange, true);
+            window.removeEventListener("resize", handleViewportChange);
         };
     }, [showTooltip]);
 
@@ -150,11 +168,16 @@ export const Tooltip: FC<TooltipProps> = ({
     // Thin popup. Portaling keeps fixed positioning viewport-based even when a
     // trigger sits inside a transformed parent; typography opts out of trigger
     // inheritance so bold labels do not make the whole tooltip shout.
-    const popupClasses =
-        "polli:fixed polli:w-max polli:px-2 polli:py-1 polli:bg-theme-bg-pale polli:text-theme-text-base polli:font-normal polli:leading-snug polli:tracking-normal polli:normal-case polli:not-italic polli:border polli:border-theme-border polli:text-xs polli:rounded-md polli:shadow-sm polli:z-50 polli:pointer-events-none polli:transition-opacity polli:whitespace-pre-line polli:break-words";
+    const popupClasses = cn(
+        "polli:fixed polli:w-max polli:px-2 polli:py-1 polli:bg-theme-bg-pale polli:text-theme-text-base polli:font-normal polli:leading-snug polli:tracking-normal polli:normal-case polli:not-italic polli:border polli:border-theme-border polli:text-xs polli:rounded-md polli:shadow-sm polli:z-50 polli:transition-opacity polli:whitespace-pre-line polli:break-words",
+        tapEnabled ? "polli:pointer-events-auto" : "polli:pointer-events-none",
+    );
 
     const popupNode = content ? (
         <span
+            ref={(node) => {
+                popupRef.current = node;
+            }}
             id={tooltipId}
             role="tooltip"
             aria-hidden={!showTooltip}
@@ -213,7 +236,9 @@ export const Tooltip: FC<TooltipProps> = ({
             updateTooltipPosition();
             setShowTooltip(true);
         },
-        onBlur: closeTooltip,
+        onBlur: () => {
+            if (!tapPinnedRef.current) setShowTooltip(false);
+        },
         style,
     };
 
