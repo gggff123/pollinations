@@ -10,6 +10,7 @@ import {
     getModelBrandLogoPath,
     getModelCapabilities,
     getModelCapabilityLabel,
+    getModelDescriptionWithoutName,
     getModelDisplayName,
     getModelInputModalities,
     getModelModalityLabel,
@@ -175,6 +176,7 @@ const MobileModelRow: FC<MobileModelRowProps> = ({ model }) => {
     const capabilityLabel = getModelCapabilityLabel(model);
     const pollinationsTools = hasPollinationsTools(model);
     const publicModelName = displayName || model.name;
+    const modelDescription = getModelDescriptionWithoutName(model);
     const showNew = isNewModel(model);
     const showPaidOnly = isPaidOnly(model);
     const showAlpha = isAlpha(model);
@@ -239,6 +241,11 @@ const MobileModelRow: FC<MobileModelRowProps> = ({ model }) => {
                         )}
                     </div>
                     <ModelId name={model.name} showCopyIcon />
+                    {modelDescription && (
+                        <p className="text-sm leading-snug text-theme-text-muted">
+                            {modelDescription}
+                        </p>
+                    )}
                     {model.brandUrl && model.brand && (
                         <a
                             href={model.brandUrl}
