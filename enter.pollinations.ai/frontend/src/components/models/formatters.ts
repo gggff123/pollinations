@@ -15,7 +15,19 @@ export const formatPricePer1M = (price: number): string => {
     const formatted = per1M.toFixed(decimals);
     // Remove trailing zeros but keep at least .0 for whole numbers
     const result = formatted.replace(/0+$/, "");
-    return result.endsWith(".") ? result + "0" : result;
+    return result.endsWith(".") ? `${result}0` : result;
+};
+
+export const formatContextLength = (tokens: number): string => {
+    if (tokens >= 1_000_000) {
+        const millions = tokens / 1_000_000;
+        return `${Number.isInteger(millions) ? millions : millions.toFixed(1)}M`;
+    }
+    if (tokens >= 1_000) {
+        const thousands = tokens / 1_000;
+        return `${Number.isInteger(thousands) ? thousands : thousands.toFixed(1)}K`;
+    }
+    return `${tokens}`;
 };
 
 export const formatPrice = (
@@ -67,5 +79,5 @@ export const formatPriceFlat = (price: number): string => {
 
     // Remove trailing zeros but keep at least .0 for whole numbers
     const result = formatted.replace(/0+$/, "");
-    return result.endsWith(".") ? result + "0" : result;
+    return result.endsWith(".") ? `${result}0` : result;
 };

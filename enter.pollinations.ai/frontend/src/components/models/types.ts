@@ -79,6 +79,12 @@ export type ModelPrice = {
     inputModalities?: string[];
     outputModalities?: string[];
     capabilities: ModelCapability[];
+    contextLength?: number;
+    minDuration?: number;
+    maxDuration?: number;
+    defaultDuration?: number;
+    allowedDurations?: number[];
+    durationStep?: number;
     paidOnly?: boolean;
     free?: boolean;
     alpha?: boolean;

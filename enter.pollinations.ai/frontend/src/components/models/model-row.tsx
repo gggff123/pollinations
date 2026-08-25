@@ -30,8 +30,10 @@ import {
 import {
     type BalanceAccess,
     BalanceAccessChip,
+    ModelContextWindow,
     ModelRateValue,
     ModelStatusChips,
+    ModelVideoDuration,
     PerUserRateLimit,
 } from "./model-status-chips.tsx";
 import {
@@ -367,9 +369,18 @@ export const ModelRow: FC<ModelRowProps> = ({ model }) => {
                                 />
                             </div>
                         )}
-                        {model.perUserRpm != null && (
-                            <div className="flex min-w-0 items-center">
+                        {(model.perUserRpm != null ||
+                            model.contextLength != null ||
+                            model.minDuration != null ||
+                            model.maxDuration != null ||
+                            (model.allowedDurations &&
+                                model.allowedDurations.length > 0)) && (
+                            <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-0.5">
                                 <PerUserRateLimit value={model.perUserRpm} />
+                                <ModelContextWindow
+                                    value={model.contextLength}
+                                />
+                                <ModelVideoDuration model={model} />
                             </div>
                         )}
                     </div>

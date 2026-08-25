@@ -57,6 +57,11 @@ export type ApiModelInfo = {
     tools?: boolean;
     reasoning?: boolean;
     context_length?: number;
+    min_duration?: number;
+    max_duration?: number;
+    default_duration?: number;
+    allowed_durations?: number[];
+    duration_step?: number;
     voices?: string[];
     is_specialized?: boolean;
     paid_only?: boolean;
@@ -256,6 +261,12 @@ function baseModelPrice(model: ApiModelInfo): ModelPrice | null {
         inputModalities: model.input_modalities,
         outputModalities: model.output_modalities,
         capabilities: model.capabilities ?? [],
+        contextLength: model.context_length,
+        minDuration: model.min_duration,
+        maxDuration: model.max_duration,
+        defaultDuration: model.default_duration,
+        allowedDurations: model.allowed_durations,
+        durationStep: model.duration_step,
         paidOnly: model.paid_only,
         free:
             model.pricing !== undefined &&
