@@ -1,6 +1,8 @@
 import { Chip, SparklesIcon, Tooltip } from "@pollinations/ui";
 import { PaidChip, TierChip, WalletKindIcon } from "@pollinations/ui/wallet";
 import type { FC } from "react";
+import { formatContextLength } from "./formatters.ts";
+import type { ModelPrice } from "./types.ts";
 
 export type BalanceAccess = "quest" | "paid" | "free";
 
@@ -96,6 +98,94 @@ export const PerUserRateLimit: FC<{ value?: number | null }> = ({ value }) => {
             displayContents
         >
             <ModelRateValue value={value} unit="req /minute" />
+        </Tooltip>
+    );
+};
+
+export const ModelContextWindow: FC<{ value?: number }> = ({ value }) => {
+    if (value == null || value <= 0) return null;
+
+    const formattedValue = formatContextLength(value);
+    const fullCount = value.toLocaleString();
+    const tooltipLabel = `Context window: ${fullCount} tokens.`;
+
+    return (
+        <Tooltip
+            triggerAs="span"
+            content={
+                <span>
+                    Context window:{" "}
+                    <strong className="font-semibold text-theme-text-strong">
+                        {fullCount} tokens
+                    </strong>
+                    .
+                </span>
+            }
+            ariaLabel={tooltipLabel}
+            className="pointer-events-auto shrink-0"
+            tapEnabled
+            displayContents
+        >
+            <ModelRateValue value={formattedValue} unit="ctx tokens" />
+        </Tooltip>
+    );
+};
+
+export const ModelVideoDuration: FC<{ model: ModelPrice }> = ({ model }) => {
+    const { type, minDuration, maxDuration, allowedDurations } = model;
+
+    if (type !== "video") return null;
+
+    let displayValue: string | undefined;
+    let tooltipText: string | undefined;
+
+    if (allowedDurations && allowedDurations.length > 0) {
+        if (allowedDurations.length === 1) {
+            displayValue = `${allowedDurations[0]}s`;
+            tooltipText = `Duration: ${allowedDurations[0]} seconds.`;
+        } else {
+            const sorted = [...allowedDurations].sort((a, b) => a - b);
+            const min = sorted[0];
+            const max = sorted[sorted.length - 1];
+            displayValue = min === max ? `${min}s` : `${min}–${max}s`;
+            tooltipText = `Supported durations: ${sorted.join(", ")} seconds.`;
+        }
+    } else if (minDuration != null || maxDuration != null) {
+        if (minDuration != null && maxDuration != null) {
+            if (minDuration === maxDuration) {
+                displayValue = `${minDuration}s`;
+                tooltipText = `Duration: ${minDuration} seconds.`;
+            } else {
+                displayValue = `${minDuration}–${maxDuration}s`;
+                tooltipText = `Supported duration range: ${minDuration} to ${maxDuration} seconds.`;
+            }
+        } else if (minDuration != null) {
+            displayValue = `≥${minDuration}s`;
+            tooltipText = `Minimum duration: ${minDuration} seconds.`;
+        } else if (maxDuration != null) {
+            displayValue = `≤${maxDuration}s`;
+            tooltipText = `Maximum duration: ${maxDuration} seconds.`;
+        }
+    }
+
+    if (!displayValue || !tooltipText) return null;
+
+    return (
+        <Tooltip
+            triggerAs="span"
+            content={
+                <span>
+                    <strong className="font-semibold text-theme-text-strong">
+                        {tooltipText}
+                    </strong>
+                </span>
+            }
+            ariaLabel={tooltipText}
+            className="pointer-events-auto shrink-0"
+            tapEnabled
+            displayContents
+        >
+            <ModelRateValue value={displayValue} unit="duration" />
         </Tooltip>
     );
 };
