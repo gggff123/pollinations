@@ -168,13 +168,10 @@ export const PerPollenEstimate: FC<{
 };
 
 export function getModelTitleTooltipContent(model: ModelPrice): ReactNode {
-    const modelDescription = getModelDescriptionWithoutName(model);
-
-    if (!model.agent || !model.baseModel) return modelDescription;
+    if (!model.agent || !model.baseModel) return null;
 
     return (
         <span className="flex max-w-sm flex-col gap-1.5 text-left">
-            {modelDescription && <span>{modelDescription}</span>}
             <span className="text-xs text-theme-text-muted">
                 <strong className="font-semibold text-theme-text-base">
                     Base model:
@@ -196,6 +193,7 @@ export const ModelRow: FC<ModelRowProps> = ({ model }) => {
     const capabilityLabel = getModelCapabilityLabel(model);
     const pollinationsTools = hasPollinationsTools(model);
     const publicModelName = modelDisplayName || model.name;
+    const modelDescription = getModelDescriptionWithoutName(model);
     const titleTooltip = getModelTitleTooltipContent(model);
     const showNew = isNewModel(model);
     const showPaidOnly = isPaidOnly(model);
@@ -276,6 +274,11 @@ export const ModelRow: FC<ModelRowProps> = ({ model }) => {
                         )}
                     </div>
                     <ModelId name={model.name} />
+                    {modelDescription && (
+                        <p className="text-sm leading-snug text-theme-text-muted">
+                            {modelDescription}
+                        </p>
+                    )}
                     {model.brandUrl && model.brand && (
                         <a
                             href={model.brandUrl}
